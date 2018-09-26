@@ -1,4 +1,0 @@
-other_database:
-  adapter: postgresql
-  user: postgres
-  database: other_database

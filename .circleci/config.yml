@@ -28,7 +28,8 @@ jobs:
     
     steps:
       - checkout
-   
+      - run: sudo apt-get install postgresql-client-9.6 postgresql-contrib-9.6
+
       # Restore bundle cache
       - restore_cache:
           keys:
@@ -55,16 +56,13 @@ jobs:
               sleep 2
             done
             echo Failed waiting for Postgres && exit 1
-      
-      # OTHER_DATABASE CONFIG
-      - run: cp config/database.yml.ci config/database.yml
-      - run: 
-          name: Set up DB
-          command: |
-            bundle exec rake db:create db:schema:load --trace
-            bundle exec rake db:migrate
 
-      # - run: createdb -U postgres -h localhost -p 5432 other_database
+      - run:
+          name: Database Setup
+          command: |
+            bundle exec rake db:schema:load
+
+      - run: createdb -U postgres -h localhost -p 5432 other_database
       # Run test
       - run:
           name: Run test
