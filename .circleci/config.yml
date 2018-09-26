@@ -1,21 +1,28 @@
 version: 2
 jobs:
   build:
-    parallelism: 3
+    working_directory: ~/printspeak/printspeak
     docker:
-      - image: circleci/ruby:2.4.2-jessie-node
+      - image: printspeak/circle
         environment:
-          BUNDLE_JOBS: 3
-          BUNDLE_RETRY: 3
-          BUNDLE_PATH: vendor/bundle
-          PGHOST: 127.0.0.1
-          PGUSER: circleci-demo-ruby
           RAILS_ENV: test
-      - image: circleci/postgres:9.5-alpine
+          PGHOST: 127.0.0.1
+          PGUSER: ubuntu
+
+      - image: circleci/postgres:9.6.3-alpine
         environment:
-          POSTGRES_USER: circleci-demo-ruby
-          POSTGRES_DB: rails_blog
-          POSTGRES_PASSWORD: ""
+          POSTGRES_USER: ubuntu
+          POSTGRES_DB: circle_ruby_test
+      
+      - image: redis
+
+    environment:
+      CIRCLE_ARTIFACTS: /tmp/circleci-artifacts
+      CIRCLE_TEST_REPORTS: /tmp/circleci-test-results
+      DATABASE_URL: postgres://ubuntu:@127.0.0.1:5432/circle_ruby_test
+      CODECLIMATE_REPO_TOKEN: 7fa3492e65040bd42e0bf66ef86d6aea90eeda4f65e0e77c83abd0447177d27e
+      CC_TEST_REPORTER_ID: 7fa3492e65040bd42e0bf66ef86d6aea90eeda4f65e0e77c83abd0447177d27e
+    
     steps:
       - checkout
 
@@ -60,20 +67,17 @@ jobs:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m
 
+      - run: createdb -U postgres -h localhost -p 5432 external_database
+
       - run:
           name: Database setup
           command: bin/rails db:schema:load --trace
 
       # Run rspec in parallel
       - run:
-          name: Run rspec in parallel
+          name: Run test
           command: |
-            bundle exec rspec --profile 10 \
-                              --format RspecJunitFormatter \
-                              --out test_results/rspec.xml \
-                              --format progress \
-                              $(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
-
+            bundle exec rake test
 
       # Save test results for timing analysis
       - store_test_results:
