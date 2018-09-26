@@ -56,8 +56,7 @@ jobs:
       - run:
           name: Database Setup
           command: |
-            bundle exec rake db:create
-            bundle exec rake db:structure:load
+            bundle exec rake db:schema:load
 
       - run: createdb -U postgres -h localhost -p 5432 other_database
       # Run test
