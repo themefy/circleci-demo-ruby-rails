@@ -58,7 +58,10 @@ jobs:
           command: |
             bundle exec rake db:schema:load
 
-      - run: createdb -U postgres -h localhost -p 5432 other_database
+      - run:
+          name: Set up other_database
+          command: sudo psql -p 5432 -c 'create database other_database'
+      # - run: createdb -U postgres -h localhost -p 5432 other_database
       # Run test
       - run:
           name: Run test
