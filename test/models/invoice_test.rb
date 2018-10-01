@@ -4,7 +4,7 @@ class InvoiceTest < ActiveSupport::TestCase
   test 'records from external database' do
     Estimate.delete_all
 
-    @connection = PG.connect(
+    conn = PG.connect(
       connect_timeout: 5,
       host: "localhost",
       dbname: "other_database",
@@ -13,7 +13,7 @@ class InvoiceTest < ActiveSupport::TestCase
     )
 
     sql = 'SELECT invoice.id FROM invoice'
-    res = @connection.exec(sql)
+    res = conn.exec(sql)
 
     assert_equal Estimate.all.count, 0
 
