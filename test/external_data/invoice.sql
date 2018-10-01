@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS "public"."invoice";
-
 CREATE TABLE "public"."invoice" (
 	"id" int8 NOT NULL
 )
